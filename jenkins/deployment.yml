@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: cicd
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk17
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "2"
+            limits:
+              memory: "4Gi"
+              cpu: "4"
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 50000
+              name: agent
+          env:
+            - name: JAVA_OPTS
+              value: >-
+                -Dcasc.jenkins.config=/var/jenkins_home/casc_configs/jenkins.yaml
+                -Dhudson.TcpSlaveAgentListener.hostName=jenkins.team1.devops.pmifi.ru
+                -Dhudson.TcpSlaveAgentListener.port=50000
+            - name: JENKINS_OPTS
+              value: >-
+                --httpPort=8080
+                --prefix=/
+          volumeMounts:
+            - mountPath: /var/jenkins_home
+              name: jenkins-data
+            - mountPath: /var/jenkins_home/casc_configs
+              name: jenkins-casc
+
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+            claimName: jenkins-data-pvc
+        - name: jenkins-casc
+          secret:
+            secretName: jenkins-casc-config

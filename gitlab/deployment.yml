@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab
+  namespace: cicd
+  labels:
+    app: gitlab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab
+  template:
+    metadata:
+      labels:
+        app: gitlab
+    spec:
+      containers:
+        - name: gitlab
+          image: gitlab/gitlab-ce:latest
+          resources:
+            requests:
+              memory: "4Gi"
+              cpu: "4"
+            limits:
+              memory: "8Gi"
+              cpu: "4"
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 22
+              name: ssh
+          env:
+            - name: GITLAB_OMNIBUS_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: gitlab-config
+                  key: omnibus-config
+
+          volumeMounts:
+            - mountPath: /var/log/gitlab
+              name: gitlab-logs
+            - mountPath: /var/opt/gitlab
+              name: gitlab-data
+
+      volumes:
+        - name: gitlab-logs
+          persistentVolumeClaim:
+            claimName: gitlab-logs-pvc
+        - name: gitlab-data
+          persistentVolumeClaim:
