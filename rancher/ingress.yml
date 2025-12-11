@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rancher
+  namespace: cattle-system
+  labels:
+    app: rancher
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Proto: "https"
+    traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Host: "rancher.team1.devops.pmifi.ru"
+    traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Port: "443"
+spec:
+  tls:
+    - hosts:
+        - rancher.team1.devops.pmifi.ru
+      secretName: multi-domain-tls
+  rules:
+    - host: rancher.team1.devops.pmifi.ru
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rancher
+                port:
+                  number: 80
