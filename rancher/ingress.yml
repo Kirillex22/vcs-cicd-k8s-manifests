@@ -25,10 +25,3 @@ spec:
                 name: rancher
                 port:
                   number: 80
----
-apiVersion: management.cattle.io/v3
-kind: Setting
-metadata:
-  name: server-url
-  namespace: cattle
-value: https://rancher.team1.devops.pmifi.ru
