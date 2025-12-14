@@ -29,6 +29,7 @@ spec:
             - containerPort: 80
               name: http
             - containerPort: 22
+              hostPort: 22
               name: ssh
           env:
             - name: GITLAB_OMNIBUS_CONFIG
