@@ -50,3 +50,4 @@ spec:
             claimName: gitlab-logs-pvc
         - name: gitlab-data
           persistentVolumeClaim:
+            claimName: gitlab-data-pvc
