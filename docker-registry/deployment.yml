@@ -1,0 +1,76 @@
+# 3-registry-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-registry
+  namespace: docker-registry
+  annotations:
+    argocd.argoproj.io/sync-wave: "2" 
+  labels:
+    app: docker-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-registry
+  template:
+    metadata:
+      labels:
+        app: docker-registry
+    spec:
+      containers:
+      - name: registry
+        image: registry:2.8
+        ports:
+        - containerPort: 5000
+        env:
+        # Основные настройки
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
+        # Отключаем авторизацию
+        - name: REGISTRY_AUTH
+          value: ""
+        # Отключаем TLS (для упрощения)
+        - name: REGISTRY_HTTP_TLS
+          value: "false"
+        # Настройки хранилища
+        - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+          value: /var/lib/registry
+        # Разрешаем все домены для CORS
+        - name: REGISTRY_HTTP_HEADERS_ACCESS_CONTROL_ALLOW_ORIGIN
+          value: '["*"]'
+        - name: REGISTRY_HTTP_HEADERS_ACCESS_CONTROL_ALLOW_METHODS
+          value: '["HEAD", "GET", "OPTIONS", "DELETE", "POST", "PUT"]'
+        
+        # Монтируем PVC
+        volumeMounts:
+        - name: registry-storage
+          mountPath: /var/lib/registry
+          
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+            
+        # Проверки жизнеспособности
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          
+      volumes:
+      - name: registry-storage
+        persistentVolumeClaim:
+          claimName: registry-pvc

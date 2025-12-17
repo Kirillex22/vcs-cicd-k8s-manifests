@@ -1,0 +1,7 @@
+# 1-registry-namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: docker-registry
+  annotations:
+    argocd.argoproj.io/sync-wave: "0" 
