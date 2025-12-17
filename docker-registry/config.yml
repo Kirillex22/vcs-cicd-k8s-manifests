@@ -1,0 +1,31 @@
+# registry-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry-config
+  namespace: docker-registry
+data:
+  config.yml: |
+    version: 0.1
+    log:
+      level: info
+      fields:
+        service: registry
+    storage:
+      delete:
+        enabled: true
+      cache:
+        blobdescriptor: inmemory
+      filesystem:
+        rootdirectory: /var/lib/registry
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+        Access-Control-Allow-Origin: ['*']
+        Access-Control-Allow-Methods: ['HEAD', 'GET', 'OPTIONS', 'DELETE', 'POST', 'PUT']
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3
