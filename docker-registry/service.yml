@@ -4,8 +4,6 @@ kind: Service
 metadata:
   name: docker-registry
   namespace: docker-registry
-  annotations:
-    argocd.argoproj.io/sync-wave: "3" 
 spec:
   selector:
     app: docker-registry

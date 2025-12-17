@@ -4,8 +4,6 @@ kind: Deployment
 metadata:
   name: docker-registry
   namespace: docker-registry
-  annotations:
-    argocd.argoproj.io/sync-wave: "2" 
   labels:
     app: docker-registry
 spec:
