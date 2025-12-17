@@ -11,5 +11,4 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: standard  # или ваш storage class
+      storage: 5Gi
