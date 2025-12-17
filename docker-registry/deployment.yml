@@ -19,31 +19,22 @@ spec:
       containers:
       - name: registry
         image: registry:2.8
-        ports:
-        - containerPort: 5000
-        env:
-        # Основные настройки
-        - name: REGISTRY_STORAGE_DELETE_ENABLED
-          value: "true"
-        # Отключаем авторизацию
-        - name: REGISTRY_AUTH
-          value: ""
-        # Отключаем TLS (для упрощения)
-        - name: REGISTRY_HTTP_TLS
-          value: "false"
-        # Настройки хранилища
-        - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
-          value: /var/lib/registry
-        # Разрешаем все домены для CORS
-        - name: REGISTRY_HTTP_HEADERS_ACCESS_CONTROL_ALLOW_ORIGIN
-          value: '["*"]'
-        - name: REGISTRY_HTTP_HEADERS_ACCESS_CONTROL_ALLOW_METHODS
-          value: '["HEAD", "GET", "OPTIONS", "DELETE", "POST", "PUT"]'
         
-        # Монтируем PVC
+        # ДОБАВЬТЕ ЭТУ СЕКЦИЮ - Конфигурация через ConfigMap
         volumeMounts:
+        - name: config
+          mountPath: /etc/docker/registry/config.yml
+          subPath: config.yml
         - name: registry-storage
           mountPath: /var/lib/registry
+          
+        env:
+        # Основные настройки (оставляем только критичные)
+        - name: REGISTRY_STORAGE_DELETE_ENABLED
+          value: "true"
+        
+        ports:
+        - containerPort: 5000
           
         resources:
           requests:
@@ -53,7 +44,6 @@ spec:
             memory: "512Mi"
             cpu: "500m"
             
-        # Проверки жизнеспособности
         livenessProbe:
           httpGet:
             path: /
@@ -69,6 +59,10 @@ spec:
           periodSeconds: 10
           
       volumes:
+      # Добавляем ConfigMap
+      - name: config
+        configMap:
+          name: registry-config
       - name: registry-storage
         persistentVolumeClaim:
           claimName: registry-pvc
