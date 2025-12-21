@@ -9,7 +9,7 @@ loki:
   url: http://loki-stack.monitoring.svc.cluster.local:3100
   persistence:
     enabled: true
-    size: 10Gi
+    size: 5Gi
     storageClassName: ""
 
 promtail:
@@ -23,7 +23,6 @@ promtail:
 grafana:
   enabled: true
   
-  # Настройки админа через секрет
   admin:
     existingSecret: "loki-stack-admin-secret"
     userKey: admin-user
