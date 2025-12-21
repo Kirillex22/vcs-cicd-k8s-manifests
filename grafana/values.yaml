@@ -1,0 +1,80 @@
+prometheus:
+  enabled: true
+  isDefault: false
+  url: http://loki-stack-prometheus-server.monitoring.svc.cluster.local:80
+
+loki:
+  enabled: true
+  isDefault: true
+  url: http://loki-stack.monitoring.svc.cluster.local:3100
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClassName: ""
+
+promtail:
+  enabled: true
+  config:
+    logLevel: info
+    serverPort: 3101
+    clients:
+      - url: http://loki-stack.monitoring.svc.cluster.local:3100/loki/api/v1/push
+
+grafana:
+  enabled: true
+  
+  # Настройки админа через секрет
+  admin:
+    existingSecret: "grafana-admin"
+    userKey: admin-user
+    passwordKey: admin-password
+  
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  
+  ingress:
+    enabled: true
+    className: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+      traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Proto: "http"
+      traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Host: "grafana.team1.devops.pmifi.ru"
+      traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-Port: "80"
+      traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Forwarded-For: "$proxy_add_x_forwarded_for"
+      traefik.ingress.kubernetes.io/headers.customrequestheaders.X-Real-IP: "$remote_addr"
+    hosts:
+      - grafana.team1.devops.pmifi.ru
+    paths:
+      - /
+  
+  persistence:
+    enabled: true
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+  
+  additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      url: http://loki-stack-prometheus-server:80
+      access: proxy
+      isDefault: false
+    - name: Loki
+      type: loki
+      url: http://loki-stack:3100
+      access: proxy
+      isDefault: true
+  
+  sidecar:
+    datasources:
+      enabled: true
+    dashboards:
+      enabled: true
+  
+  image:
+    tag: "10.0.2"
+  
+  env:
+    GF_INSTALL_PLUGINS: "grafana-piechart-panel"
